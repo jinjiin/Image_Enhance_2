@@ -15,7 +15,7 @@ def resnet(input_image):
 
         W3 = weight_variable([3, 3, 64, 64], name="W3");
         b3 = bias_variable([64], name="b3");
-        c3 = tf.nn.relu(_instance_norm(conv2d(c2, W3) + b3)) + c1
+        c3 = tf.nn.relu(_instance_norm(conv2d(c2, W3) + b3) + c1)
 
         # residual 2
 
@@ -25,7 +25,7 @@ def resnet(input_image):
 
         W5 = weight_variable([3, 3, 64, 64], name="W5");
         b5 = bias_variable([64], name="b5");
-        c5 = tf.nn.relu(_instance_norm(conv2d(c4, W5) + b5)) + c3
+        c5 = tf.nn.relu(_instance_norm(conv2d(c4, W5) + b5) + c3)
 
         # residual 3
 
@@ -35,7 +35,7 @@ def resnet(input_image):
 
         W7 = weight_variable([3, 3, 64, 64], name="W7");
         b7 = bias_variable([64], name="b7");
-        c7 = tf.nn.relu(_instance_norm(conv2d(c6, W7) + b7)) + c5
+        c7 = tf.nn.relu(_instance_norm(conv2d(c6, W7) + b7) + c5)
 
         # residual 4
 
@@ -45,7 +45,7 @@ def resnet(input_image):
 
         W9 = weight_variable([3, 3, 64, 64], name="W9");
         b9 = bias_variable([64], name="b9");
-        c9 = tf.nn.relu(_instance_norm(conv2d(c8, W9) + b9)) + c7
+        c9 = tf.nn.relu(_instance_norm(conv2d(c8, W9) + b9) + c7)
 
         # Convolutional
 
@@ -89,7 +89,33 @@ def adversarial(image_):
 
     return adv_out
 
+def encode(input_image):
+    with tf.variable_scope("encode"):
+        W1 = weight_variable([5, 5, 3, 32], name="W1")
+        b1 = bias_variable([32], name="b1")
+        c1 = tf.nn.relu(conv2d(input_image, W1) + b1)
 
+        p1 = max_pool_2x2(c1)
+
+        W2 = weight_variable([5, 5, 3, 32], name="W2")
+        b2 = bias_variable([32], name="b2")
+        c2 = tf.nn.relu(conv2d(p1, W2) + b2)
+
+        p2 = max_pool_2x2(c2)
+
+        W_fc1 = weight_variable([25 * 25 * 32, 256]) # fc1的神经元个数是256
+        b_fc1 = bias_variable([256])
+        h_pool2_flat = tf.reshape(p2, [-1, 25 * 25 * 32])
+        h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
+        keep_prob = tf.placeholder("float")
+        h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
+
+        W_fc2 = weight_variable([256, 10])
+        b_fc2 = bias_variable([10])
+
+        y_conv = tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
+
+        return y_conv
 def weight_variable(shape, name):
     initial = tf.truncated_normal(shape, stddev=0.01)
     return tf.Variable(initial, name=name)
@@ -103,6 +129,8 @@ def bias_variable(shape, name):
 def conv2d(x, W):
     return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
 
+def max_pool_2x2(x):
+  return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
 def leaky_relu(x, alpha=0.2):
     return tf.maximum(alpha * x, x)
