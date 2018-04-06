@@ -116,6 +116,7 @@ def encode(input_image):
         y_conv = tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
 
         return y_conv
+
 def weight_variable(shape, name):
     initial = tf.truncated_normal(shape, stddev=0.01)
     return tf.Variable(initial, name=name)
