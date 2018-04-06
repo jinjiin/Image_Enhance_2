@@ -14,7 +14,7 @@ from scipy import misc
 import numpy as np
 import sys
 
-from load_dataset import load_test_data, load_batch
+from load_dataset import load_fft_test, load_fft_train, iFFT
 from ssim import MultiScaleSSIM
 import model
 import utils
@@ -34,10 +34,10 @@ np.random.seed(0)  # 设置随机种子，则每次运行相同的代码生成�
 
 # load training and test data
 print("Loading test data...")
-test_data, test_answ = load_test_data(phone, dped_dir, PATCH_SIZE)
+test_data, test_answ = load_fft_test(phone, dped_dir, PATCH_SIZE)
 print("Test data has been loaded.")
 print("Loading training data...")
-train_data, train_answ = load_batch(phone, dped_dir, train_size, PATCH_SIZE)
+train_data, train_answ = load_fft_train(phone, dped_dir, train_size, PATCH_SIZE)
 print("Training data has been loaded.")
 
 TEST_SIZE = test_data.shape[0]
@@ -227,7 +227,7 @@ with tf.Graph().as_default(), tf.Session() as sess:
 
             idx = 0
             for crop in enhanced_crops:
-                before_after = np.hstack((np.reshape(test_crops[idx], [PATCH_HEIGHT, PATCH_WIDTH, 3]), crop))
+                before_after = np.hstack((iFFT(np.reshape(test_crops[idx], [PATCH_HEIGHT, PATCH_WIDTH, 3])), iFFT(crop)))
                 misc.imsave('results/' + str(phone) + "_" + str(idx) + '_iteration_' + str(i) + '.jpg', before_after)
                 idx += 1
 
@@ -242,7 +242,7 @@ with tf.Graph().as_default(), tf.Session() as sess:
 
             del train_data
             del train_answ
-            train_data, train_answ = load_batch(phone, dped_dir, train_size, PATCH_SIZE)
+            train_data, train_answ = load_fft_train(phone, dped_dir, train_size, PATCH_SIZE)
 
 
 

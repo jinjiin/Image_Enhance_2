@@ -84,8 +84,7 @@ def iFFT(result, height, weidth):
     result = np.int8(np.real(result))
     # 转换为图像
     im = Image.frombytes('RGB', (height, weidth), result)
-    im.show()
-    im.save('ifft_image.jpg')
+    return im
 
 def load_fft_train(phone, dped_dir, TRAIN_SIZE, IMAGE_SIZE):
     train_directory_phone = dped_dir + str(phone) + '/training_data/' + str(phone) + '/'
@@ -108,7 +107,7 @@ def load_fft_train(phone, dped_dir, TRAIN_SIZE, IMAGE_SIZE):
     i = 0
     for img in TRAIN_IMAGES:
 
-        I = np.asarray(FFT(train_directory_phone + str(img) + '.jpg'))
+        I = np.asarray(misc.imread(train_directory_phone + str(img) + '.jpg'))
         I = np.float16(np.reshape(I, [1, IMAGE_SIZE])) / 255
         train_data[i, :] = I
 
