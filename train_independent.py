@@ -22,8 +22,8 @@ import vgg
 
 # define size of training imahe pathes
 
-PATHCH_WEIDTH = 100
-PATHCH_HEIGHT = 100
+PATCH_WIDTH = 100
+PATCH_HEIGHT = 100
 PATCH_SIZE = 100 * 100 * 3
 
 phone, batch_size, train_size, learning_rate, num_train_iters, \
@@ -57,7 +57,7 @@ with tf.Graph().as_default(), tf.Session() as sess:
 
     # get processed enhanced image
 
-    enhanced = models.resnet(phone_image)
+    enhanced = model.resnet(phone_image)
 
     # transform both dslr and enhanced images to grayscale
 
@@ -70,7 +70,7 @@ with tf.Graph().as_default(), tf.Session() as sess:
     adversarial_ = tf.multiply(enhanced_gray, 1 - adv_) + tf.multiply(dslr_gray, adv_)
     adversarial_image = tf.reshape(adversarial_, [-1, PATCH_HEIGHT, PATCH_WIDTH, 1])
 
-    discrim_predictions = models.adversarial(adversarial_image)
+    discrim_predictions = model.adversarial(adversarial_image)
 
     # losses
     # 1) texture (adversarial) loss

@@ -3,8 +3,6 @@ import scipy.stats as st
 import tensorflow as tf
 import numpy as np
 import sys
-from PIL import Image
-from numpy.fft import fft,ifft
 from functools import reduce
 
 def log10(x):
@@ -210,19 +208,3 @@ def extract_crop(image, resolution, phone, res_sizes):
 
         return image[y_up : y_down, x_up : x_down, :]
 
-'''transform img to fftimg, keep shape invariant'''
-def FFT(img):
-    srcIm = Image.open(img)
-    srcArray = np.fromstring(srcIm.tobytes(), dtype=np.int8)
-    print(type(srcArray))  # <class 'numpy.ndarray'>
-    result = fft(srcIm)  # result.shape=(1944, 2592, 3)
-    return result
-
-'''height, weidth 是照片属性中的第一维和第二维'''
-def iFFT(result, height, weidth):
-    result = ifft(result)  # result.shape=(1944, 2592, 3)
-    result = np.int8(np.real(result))
-    # 转换为图像
-    im = Image.frombytes('RGB', (height, weidth), result)
-    im.show()
-    im.save('ifft_image.jpg')
