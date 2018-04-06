@@ -12,21 +12,16 @@ print(type(i2))"""
 
 def FFT(img):
     # 打开图像文件并获取数据
-    #srcIm = np.reshape(np.asarray(misc.imread(img)), 1944 * 2592 * 3)
-    #srcIm = misc.imread(img)
-    srcIm = Image.open(img)
+    print(np.asarray(misc.imread(img)).shape) # shape 为 [1944, 2592, 3]
+    srcIm = np.reshape(np.asarray(misc.imread(img)), 1944 * 2592 * 3)
     print("srcIm")
     print(srcIm)
     result = fft(srcIm)  # result.shape=(1944, 2592, 3)
-    print(type(result))
     result = ifft(result)  # result.shape=(1944, 2592, 3)
-    result = np.int8(np.real(result))
-    print(type(result))
-    print(result.shape)
-
-    im = Image.frombytes("RGB", (1944, 2592), result)
-    im.save('C:\\Users\\chenjinjin\\Desktop\\test_image\\50_ufft_im.save.jpg')
-    #misc.imsave('C:\\Users\\chenjinjin\\Desktop\\test_image\\50_ufft_imsve.jpg',im)
+    result = np.reshape(np.int8(np.real(result)), [2592, 1944, 3])
+    im = Image.frombytes('RGB', (2592, 1944), result)
+    #im.save('C:\\Users\\chenjinjin\\Desktop\\test_image\\50_ufft_im.save.jpg')
+    misc.imsave('C:\\Users\\chenjinjin\\Desktop\\test_image\\50_ufft_imsave.jpg', im)
 
 
 if __name__ == '__main__':

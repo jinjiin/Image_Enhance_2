@@ -79,11 +79,11 @@ def FFT(img):
     return result
 
 '''height, weidth 是照片属性中的第一维和第二维'''
-def iFFT(result, height, weidth):
-    result = ifft(result)  # result.shape=(1944, 2592, 3)
+def iFFT(result, height=100, width=100):
+    result = ifft(result)  # result.shape=(height, width, 3)
     result = np.int8(np.real(result))
     # 转换为图像
-    im = Image.frombytes('RGB', (height, weidth), result)
+    im = Image.frombytes('RGB', (width, height), result)
     return im
 
 def load_fft_train(phone, dped_dir, TRAIN_SIZE, IMAGE_SIZE):
@@ -108,11 +108,11 @@ def load_fft_train(phone, dped_dir, TRAIN_SIZE, IMAGE_SIZE):
     for img in TRAIN_IMAGES:
 
         I = np.asarray(misc.imread(train_directory_phone + str(img) + '.jpg'))
-        I = np.float16(np.reshape(I, [1, IMAGE_SIZE])) / 255
+        I = np.float16(np.reshape(FFT(I), [1, IMAGE_SIZE])) / 255
         train_data[i, :] = I
 
-        I = np.asarray(FFT(train_directory_dslr + str(img) + '.jpg'))
-        I = np.float16(np.reshape(I, [1, IMAGE_SIZE])) / 255
+        I = np.asarray(misc.imread(train_directory_dslr + str(img) + '.jpg'))
+        I = np.float16(np.reshape(FFT(I), [1, IMAGE_SIZE])) / 255
         train_answ[i, :] = I
 
         i += 1
