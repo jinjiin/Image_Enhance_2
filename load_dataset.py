@@ -121,3 +121,28 @@ def load_fft_train(phone, dped_dir, TRAIN_SIZE, IMAGE_SIZE):
             print(str(round(i * 100 / TRAIN_SIZE)) + "% done", end="\r")
 
     return train_data, train_answ
+
+def load_fft_test(phone, dped_dir, IMAGE_SIZE):
+    test_directory_phone = dped_dir + str(phone) + '/test_data/patches/' + str(phone) + '/'
+    test_directory_dslr = dped_dir + str(phone) + '/test_data/patches/canon/'
+
+    NUM_TEST_IMAGES = len([name for name in os.listdir(test_directory_phone)
+                           if os.path.isfile(os.path.join(test_directory_phone, name))])
+
+    test_data = np.zeros((NUM_TEST_IMAGES, IMAGE_SIZE))
+    test_answ = np.zeros((NUM_TEST_IMAGES, IMAGE_SIZE))
+
+    for i in range(0, NUM_TEST_IMAGES):
+
+        I = np.asarray(FFT(test_directory_phone + str(i) + '.jpg'))
+        I = np.float16(np.reshape(I, [1, IMAGE_SIZE])) / 255
+        test_data[i, :] = I
+
+        I = np.asarray(FFT(test_directory_dslr + str(i) + '.jpg'))
+        I = np.float16(np.reshape(I, [1, IMAGE_SIZE])) / 255
+        test_answ[i, :] = I
+
+        if i % 100 == 0:
+            print(str(round(i * 100 / NUM_TEST_IMAGES)) + "% done", end="\r")
+
+    return test_data, test_answ
