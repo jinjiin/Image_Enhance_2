@@ -1,6 +1,173 @@
 # -*- coding: utf-8 -*
 import tensorflow as tf
+import complexnn
+from   complexnn                             import ComplexBN,\
+                                                    ComplexConv1D,\
+                                                    ComplexConv2D,\
+                                                    ComplexConv3D,\
+                                                    ComplexDense,\
+                                                    FFT,IFFT,FFT2,IFFT2,\
+                                                    SpectralPooling1D,SpectralPooling2D
+from complexnn import GetImag, GetReal
+import h5py                                  as     H
+import keras
+from   keras.callbacks                       import Callback, ModelCheckpoint, LearningRateScheduler
+from   keras.datasets                        import cifar10, cifar100
+from   keras.initializers                    import Orthogonal
+from   keras.layers                          import Layer, AveragePooling2D, AveragePooling3D, add, Add, concatenate, Concatenate, Input, Flatten, Dense, Convolution2D, BatchNormalization, Activation, Reshape, ConvLSTM2D, Conv2D
+from   keras.models                          import Model, load_model, save_model
+from   keras.optimizers                      import SGD, Adam, RMSprop
+from   keras.preprocessing.image             import ImageDataGenerator
+from   keras.regularizers                    import l2
+from   keras.utils.np_utils                  import to_categorical
+import keras.backend                         as     K
+import keras.models                          as     KM
+from   kerosene.datasets                     import svhn2
+import logging                               as     L
+import numpy                                 as     np
+import os, pdb, socket, sys, time
+import theano                                as     T
+"""Learn initial imaginary component for input."""
 
+
+def learnConcatRealImagBlock(I, filter_size, featmaps, stage, block, convArgs, bnArgs, d):
+    conv_name_base = 'res' + str(stage) + block + '_branch'
+    bn_name_base = 'bn' + str(stage) + block + '_branch'
+
+    O = BatchNormalization(name=bn_name_base + '2a', **bnArgs)(I)
+    O = Activation(d.act)(O)
+    O = Convolution2D(featmaps[0], filter_size,
+                      name=conv_name_base + '2a',
+                      padding='same',
+                      kernel_initializer='he_normal',
+                      use_bias=False,
+                      kernel_regularizer=l2(0.0001))(O)
+
+    O = BatchNormalization(name=bn_name_base + '2b', **bnArgs)(O)
+    O = Activation(d.act)(O)
+    O = Convolution2D(featmaps[1], filter_size,
+                      name=conv_name_base + '2b',
+                      padding='same',
+                      kernel_initializer='he_normal',
+                      use_bias=False,
+                      kernel_regularizer=l2(0.0001))(O)
+
+    return O
+
+
+"""Get residual block."""
+
+
+def getResidualBlock(I, filter_size, featmaps, stage, block, shortcut, convArgs, bnArgs, d):
+    activation = d.act
+    drop_prob = d.dropout
+    nb_fmaps1, nb_fmaps2 = featmaps
+    conv_name_base = 'res' + str(stage) + block + '_branch'
+    bn_name_base = 'bn' + str(stage) + block + '_branch'
+    if K.image_data_format() == 'channels_first' and K.ndim(I) != 3:
+        channel_axis = 1
+    else:
+        channel_axis = -1
+
+    if d.model == "real":
+        O = BatchNormalization(name=bn_name_base + '_2a', **bnArgs)(I)
+    elif d.model == "complex":
+        O = ComplexBN(name=bn_name_base + '_2a', **bnArgs)(I)
+    O = Activation(activation)(O)
+
+    if shortcut == 'regular' or d.spectral_pool_scheme == "nodownsample":
+        if d.model == "real":
+            O = Conv2D(nb_fmaps1, filter_size, name=conv_name_base + '2a', **convArgs)(O)
+        elif d.model == "complex":
+            O = ComplexConv2D(nb_fmaps1, filter_size, name=conv_name_base + '2a', **convArgs)(O)
+    elif shortcut == 'projection':
+        if d.spectral_pool_scheme == "proj":
+            O = applySpectralPooling(O, d)
+        if d.model == "real":
+            O = Conv2D(nb_fmaps1, filter_size, name=conv_name_base + '2a', strides=(2, 2), **convArgs)(O)
+        elif d.model == "complex":
+            O = ComplexConv2D(nb_fmaps1, filter_size, name=conv_name_base + '2a', strides=(2, 2), **convArgs)(O)
+
+    if d.model == "real":
+        O = BatchNormalization(name=bn_name_base + '_2b', **bnArgs)(O)
+        O = Activation(activation)(O)
+        O = Conv2D(nb_fmaps2, filter_size, name=conv_name_base + '2b', **convArgs)(O)
+    elif d.model == "complex":
+        O = ComplexBN(name=bn_name_base + '_2b', **bnArgs)(O)
+        O = Activation(activation)(O)
+        O = ComplexConv2D(nb_fmaps2, filter_size, name=conv_name_base + '2b', **convArgs)(O)
+
+    if shortcut == 'regular':
+        O = Add()([O, I])
+    elif shortcut == 'projection':
+        if d.spectral_pool_scheme == "proj":
+            I = applySpectralPooling(I, d)
+        if d.model == "real":
+            X = Conv2D(nb_fmaps2, (1, 1),
+                       name=conv_name_base + '1',
+                       strides=(2, 2) if d.spectral_pool_scheme != "nodownsample" else
+                       (1, 1),
+                       **convArgs)(I)
+            O = Concatenate(channel_axis)([X, O])
+        elif d.model == "complex":
+            X = ComplexConv2D(nb_fmaps2, (1, 1),
+                              name=conv_name_base + '1',
+                              strides=(2, 2) if d.spectral_pool_scheme != "nodownsample" else
+                              (1, 1),
+                              **convArgs)(I)
+
+            O_real = Concatenate(channel_axis)([GetReal()(X), GetReal()(O)])
+            O_imag = Concatenate(channel_axis)([GetImag()(X), GetImag()(O)])
+            O = Concatenate(1)([O_real, O_imag])
+
+    return O
+
+
+"""Perform spectral pooling on input."""
+
+
+def applySpectralPooling(x, d):
+    if d.spectral_pool_gamma > 0 and d.spectral_pool_scheme != "none":
+        x = FFT2()(x)
+        x = SpectralPooling2D(gamma=(d.spectral_pool_gamma,
+                                     d.spectral_pool_gamma))(x)
+        x = IFFT2()(x)
+    return x
+
+# d 是参数集
+def comResnet(input, d):
+    activation = d.act
+    inputShape = (100, 100, 3)
+    channelAxis = 1 if K.image_data_format() == 'channels_first' else -1
+    convArgs = {
+        "padding": "same",
+        "use bias": False,
+        "kernel_regularizer": l2(0.0001)
+    }
+    bnArgs = {
+        "axis": channelAxis,
+        "momentum": 0.9,
+        "epsilon": 1e-04
+    }
+    convArgs.update({
+        "spectral_parametrization": d.spectral_param,
+        "kernel_initializer": d.comp_init
+    })
+
+    O = learnConcatRealImagBlock(input, (1, 1), (3, 3), 0, '0', convArgs, bnArgs, d)
+    O = tf.concat(1, [input, O])
+    O = ComplexConv2D(filters=64, kernel_size=9, name='conv1', **convArgs)(O)
+    O = ComplexBN(name='bn conv1 2a', **bnArgs)(O)
+    O = tf.nn.relu(O)
+
+    # residual
+    O = getResidualBlock(O, 3, [64, 64], 2, '0', 'regular', convArgs, bnArgs, d)
+
+    #
+    O = ComplexConv2D(filters=3, kernel_size=9, name='conv2', **convArgs)(O)
+    O = ComplexBN(name='bn conv2 2a', **bnArgs)(O)
+    O = tf.nn.tanh(O)
+    return O
 
 def resnet(input_image):
     with tf.variable_scope("generator"):

@@ -70,12 +70,13 @@ def load_batch(phone, dped_dir, TRAIN_SIZE, IMAGE_SIZE):
 
     return train_data, train_answ
 
+def norm_complex(a):
+    return a/abs(a)
+
 '''transform img to fftimg, keep shape invariant'''
 def FFT(img):
-    srcIm = Image.open(img)
-    srcArray = np.fromstring(srcIm.tobytes(), dtype=np.int8)
-    print(type(srcArray))  # <class 'numpy.ndarray'>
-    result = fft(srcIm)  # result.shape=(1944, 2592, 3)
+    # srcIm = Image.open(img)
+    result = fft(img)  # result.shape=(1944, 2592, 3)
     return result
 
 '''height, weidth 是照片属性中的第一维和第二维'''
@@ -108,11 +109,13 @@ def load_fft_train(phone, dped_dir, TRAIN_SIZE, IMAGE_SIZE):
     for img in TRAIN_IMAGES:
 
         I = np.asarray(misc.imread(train_directory_phone + str(img) + '.jpg'))
-        I = np.float16(np.reshape(FFT(I), [1, IMAGE_SIZE])) / 255
+        # I = norm_complex(np.float16(np.reshape(FFT(I), [1, IMAGE_SIZE])))
+        I = np.reshape(norm_complex(FFT(I)), [1, IMAGE_SIZE])
         train_data[i, :] = I
 
         I = np.asarray(misc.imread(train_directory_dslr + str(img) + '.jpg'))
-        I = np.float16(np.reshape(FFT(I), [1, IMAGE_SIZE])) / 255
+        # I = norm_complex(np.float16(np.reshape(FFT(I), [1, IMAGE_SIZE])))
+        I = np.reshape(norm_complex(FFT(I)), [1, IMAGE_SIZE])
         train_answ[i, :] = I
 
         i += 1
@@ -133,12 +136,14 @@ def load_fft_test(phone, dped_dir, IMAGE_SIZE):
 
     for i in range(0, NUM_TEST_IMAGES):
 
-        I = np.asarray(FFT(test_directory_phone + str(i) + '.jpg'))
-        I = np.float16(np.reshape(I, [1, IMAGE_SIZE])) / 255
+        I = np.asarray(misc.imread(test_directory_phone + str(i) + '.jpg'))
+        # I = norm_complex(np.float16(np.reshape(FFT(I), [1, IMAGE_SIZE])))
+        I = np.reshape(norm_complex(FFT(I)), [1, IMAGE_SIZE])
         test_data[i, :] = I
 
-        I = np.asarray(FFT(test_directory_dslr + str(i) + '.jpg'))
-        I = np.float16(np.reshape(I, [1, IMAGE_SIZE])) / 255
+        I = np.asarray(misc.imread(test_directory_dslr + str(i) + '.jpg'))
+        # I = norm_complex(np.float16(np.reshape(FFT(I), [1, IMAGE_SIZE])))
+        I = np.reshape(norm_complex(FFT(I)), [1, IMAGE_SIZE])
         test_answ[i, :] = I
 
         if i % 100 == 0:
