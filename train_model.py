@@ -47,6 +47,7 @@ print("Training data was loaded\n")
 TEST_SIZE = test_data.shape[0]
 num_test_batches = int(test_data.shape[0] / batch_size)
 
+Complex_args = utils.Complex_args()
 # defining system architecture
 
 with tf.Graph().as_default(), tf.Session() as sess:
@@ -62,8 +63,8 @@ with tf.Graph().as_default(), tf.Session() as sess:
 
     # get processed enhanced image
 
-    enhanced = models.resnet(phone_image)
-
+    enhanced = models.comResnet(phone_image, d=Complex_args)
+    print(enhanced.shape)
     # transform both dslr and enhanced images to grayscale
 
     enhanced_gray = tf.reshape(tf.image.rgb_to_grayscale(enhanced), [-1, PATCH_WIDTH * PATCH_HEIGHT])

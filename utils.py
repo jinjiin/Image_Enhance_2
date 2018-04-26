@@ -208,3 +208,83 @@ def extract_crop(image, resolution, phone, res_sizes):
 
         return image[y_up : y_down, x_up : x_down, :]
 
+import argparse as Ap
+def Complex_args():
+    argp = Ap.ArgumentParser(
+                             usage=None,
+                             description=None,
+                             epilog=None,
+                             )
+    argp.add_argument("-d", "--datadir", default=".", type=str,
+                      help="Path to datasets directory.")
+    argp.add_argument("-w", "--workdir", default=".", type=str,
+                      help="Path to the workspace directory for this experiment.")
+    argp.add_argument("-s", "--seed", default=0xe4223644e98b8e64, type=long,
+                      help="Seed for PRNGs.")
+    argp.add_argument("--summary", action="store_true",
+                      help="""Print a summary of the network.""")
+    argp.add_argument("--model", default="complex", type=str,
+                      choices=["real", "complex"],
+                      help="Model Selection.")
+    argp.add_argument("--dataset", default="cifar10", type=str,
+                      choices=["cifar10", "cifar100", "svhn"],
+                      help="Dataset Selection.")
+    argp.add_argument("--dropout", default=0, type=float,
+                      help="Dropout probability.")
+    argp.add_argument("-n", "--num-epochs", default=200, type=int,
+                      help="Number of epochs")
+    argp.add_argument("-b", "--batch-size", default=64, type=int,
+                      help="Batch Size")
+    argp.add_argument("--start-filter", "--sf", default=11, type=int,
+                      help="Number of feature maps in starting stage")
+    argp.add_argument("--num-blocks", "--nb", default=10, type=int,
+                      help="Number of filters in initial block")
+    argp.add_argument("--spectral-param", action="store_true",
+                      help="""Use spectral parametrization.""")
+    argp.add_argument("--spectral-pool-gamma", default=0.50, type=float,
+                      help="""Use spectral pooling, preserving a fraction gamma of frequencies""")
+    argp.add_argument("--spectral-pool-scheme", default="none", type=str,
+                      choices=["none", "stagemiddle", "proj", "nodownsample"],
+                      help="""Spectral pooling scheme""")
+    argp.add_argument("--act", default="relu", type=str,
+                      choices=["relu"],
+                      help="Activation.")
+    argp.add_argument("--aact", default="modrelu", type=str,
+                      choices=["modrelu"],
+                      help="Advanced Activation.")
+    argp.add_argument("--no-validation", action="store_true",
+                      help="Do not create a separate validation set.")
+    argp.add_argument("--comp_init", default='complex_independent', type=str,
+                      help="Initializer for the complex kernel.")
+
+    optp = argp.add_argument_group("Optimizers", "Tunables for all optimizers")
+    optp.add_argument("--optimizer", "--opt", default="nag", type=str,
+                      choices=["sgd", "nag", "adam", "rmsprop"],
+                      help="Optimizer selection.")
+    optp.add_argument("--clipnorm", "--cn", default=1.0, type=float,
+                      help="The norm of the gradient will be clipped at this magnitude.")
+    optp.add_argument("--clipval", "--cv", default=1.0, type=float,
+                      help="The values of the gradients will be individually clipped at this magnitude.")
+    optp.add_argument("--l1", default=0, type=float,
+                      help="L1 penalty.")
+    optp.add_argument("--l2", default=0, type=float,
+                      help="L2 penalty.")
+    optp.add_argument("--lr", default=1e-3, type=float,
+                      help="Master learning rate for optimizers.")
+    optp.add_argument("--momentum", "--mom", default=0.9, type=float,
+                      help="Momentum for optimizers supporting momentum.")
+    optp.add_argument("--decay", default=0, type=float,
+                      help="Learning rate decay for optimizers.")
+    optp.add_argument("--schedule", default="default", type=str,
+                      help="Learning rate schedule")
+    optp = argp.add_argument_group("Adam", "Tunables for Adam optimizer")
+    optp.add_argument("--beta1", default=0.9, type=float,
+                      help="Beta1 for Adam.")
+    optp.add_argument("--beta2", default=0.999, type=float,
+                      help="Beta2 for Adam.")
+    return argp
+
+
+
+
+

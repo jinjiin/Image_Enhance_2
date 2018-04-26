@@ -1,8 +1,6 @@
 import numpy as np
 from scipy import misc
 from PIL import Image
-import utils
-import math
 from numpy.fft import fft, ifft
 
 """I = np.asarray(misc.imread("C:\\Users\\chenjinjin\\Desktop\\test_image\\50.jpg"))
@@ -30,7 +28,7 @@ def FFT1(img):
 def norm_complex(a):
     return a/abs(a)
 
-if __name__ == '__main__':
+"""if __name__ == '__main__':
     #FFT('C:\\Users\\chenjinjin\\Desktop\\test_image\\50.jpg')
     # compare('C:\\Users\\chenjinjin\\Desktop\\test_image\\50.jpg', 'C:\\Users\\chenjinjin\\Desktop\\test_image\\50_ufft_2.jpg')
     I = np.asarray(misc.imread('C:\\Users\\chenjinjin\\Desktop\\test_image\\1.jpg'))
@@ -39,3 +37,10 @@ if __name__ == '__main__':
     print(norm_complex(FFT1(I)).dtype)
     I = np.reshape(norm_complex(FFT1(I)), [1, 100*100*3])
     print(I)
+"""
+import argparse
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("echo", help="echo the string you use here")
+    args = parser.parse_args()
+    print(args.echo)
