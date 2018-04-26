@@ -29,7 +29,7 @@ preds = Dense(10, activation='softmax')(x)
 
 loss = tf.reduce_mean(categorical_crossentropy(labels, preds))
 
-train_step = tf.train.GradientDescentOptimizer(0.5).minimize(loss)
+train_step = tf.train.GradientDescentOptimizer(0.5).minimize(loss)  # TensorFlow model
 print('Initializing variables')
 sess.run(tf.global_variables_initializer())
 with sess.as_default():
@@ -38,9 +38,9 @@ with sess.as_default():
         batch = mnist_data.train.next_batch(50)
         train_step.run(feed_dict={img: batch[0],
                                   labels: batch[1],
-                                  K.learning_phase(): 1}) #
+                                  K.learning_phase(): 1})  # K.learning_phase()为1，表示为训练模式， K.learning_phase()为0，表示为测试模式
 
-acc_value = accuracy(labels, preds)
+acc_value = accuracy(labels, preds)  # keras model
 with sess.as_default():
     print(acc_value.eval(feed_dict={img: mnist_data.test.images,
                                     labels: mnist_data.test.labels,
