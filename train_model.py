@@ -2,12 +2,10 @@
 # python train_model.py model={iphone,sony,blackberry} dped_dir=dped/ vgg_dir=vgg_pretrained/imagenet-vgg-verydeep-19.mat
 import os
 import tensorflow as tf
-from keras.backend.tensorflow_backend import set_session
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-config = tf.ConfigProto()
-config.gpu_options.per_process_gpu_memory_fraction = 0.8
-set_session(tf.Session(config=config))
+
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+
 
 import tensorflow as tf
 from scipy import misc
