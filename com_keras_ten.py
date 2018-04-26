@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*
 from keras.layers import Dropout, Dense
 from keras.losses import categorical_crossentropy
 from keras import backend as K
@@ -37,7 +38,7 @@ with sess.as_default():
         batch = mnist_data.train.next_batch(50)
         train_step.run(feed_dict={img: batch[0],
                                   labels: batch[1],
-                                  K.learning_phase(): 1})
+                                  K.learning_phase(): 1}) #
 
 acc_value = accuracy(labels, preds)
 with sess.as_default():

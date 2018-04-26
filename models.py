@@ -58,6 +58,7 @@ def learnConcatRealImagBlock(I, filter_size, featmaps, stage, block, convArgs, b
 """Get residual block."""
 
 
+# O = getResidualBlock(O, 3, [64, 64], 2, '0', 'regular', convArgs, bnArgs, d)
 def getResidualBlock(I, filter_size, featmaps, stage, block, shortcut, convArgs, bnArgs, d):
     activation = d.act
     drop_prob = d.dropout
@@ -162,10 +163,20 @@ def comResnet(input, d):
 
     # residual
     O = getResidualBlock(O, 3, [64, 64], 2, '0', 'regular', convArgs, bnArgs, d)
+    O = getResidualBlock(O, 3, [64, 64], 2, '0', 'regular', convArgs, bnArgs, d)
+    O = getResidualBlock(O, 3, [64, 64], 2, '0', 'regular', convArgs, bnArgs, d)
+    O = getResidualBlock(O, 3, [64, 64], 2, '0', 'regular', convArgs, bnArgs, d)
 
-    #
+    O = ComplexConv2D(filters=64, kernel_size=9, name='conv1', **convArgs)(O)
+    O = ComplexBN(name='bn conv2 1a', **bnArgs)(O)
+    O = tf.nn.relu(O)
+
+    O = ComplexConv2D(filters=64, kernel_size=9, name='conv1', **convArgs)(O)
+    O = ComplexBN(name='bn conv2 1a', **bnArgs)(O)
+    O = tf.nn.relu(O)
+
     O = ComplexConv2D(filters=3, kernel_size=9, name='conv2', **convArgs)(O)
-    O = ComplexBN(name='bn conv2 2a', **bnArgs)(O)
+    O = ComplexBN(name='bn conv3 1a', **bnArgs)(O)
     O = tf.nn.tanh(O)
     return O
 

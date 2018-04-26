@@ -16,7 +16,7 @@ import sys
 
 from load_dataset import load_fft_test, load_fft_train, iFFT
 from ssim import MultiScaleSSIM
-import model
+import models
 import utils
 import vgg
 
@@ -57,7 +57,7 @@ with tf.Graph().as_default(), tf.Session() as sess:
 
     # get processed enhanced image
 
-    enhanced = model.resnet(phone_image)
+    enhanced = models.resnet(phone_image)
 
     # transform both dslr and enhanced images to grayscale
 
@@ -70,7 +70,7 @@ with tf.Graph().as_default(), tf.Session() as sess:
     adversarial_ = tf.multiply(enhanced_gray, 1 - adv_) + tf.multiply(dslr_gray, adv_)
     adversarial_image = tf.reshape(adversarial_, [-1, PATCH_HEIGHT, PATCH_WIDTH, 1])
 
-    discrim_predictions = model.adversarial(adversarial_image)
+    discrim_predictions = models.adversarial(adversarial_image)
 
     # losses
     # 1) texture (adversarial) loss
