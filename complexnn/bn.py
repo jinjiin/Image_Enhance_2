@@ -10,8 +10,7 @@
 #       https://github.com/fchollet/keras/blob/master/keras/layers/normalization.py
 
 import numpy as np
-from keras.layers.core import Layer
-import keras.engine.InputSpec
+from keras.layers import Layer, InputSpec
 from keras import initializers, regularizers, constraints
 import keras.backend as K
 

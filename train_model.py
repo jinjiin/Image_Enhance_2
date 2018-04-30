@@ -2,10 +2,12 @@
 # python train_model.py model={iphone,sony,blackberry} dped_dir=dped/ vgg_dir=vgg_pretrained/imagenet-vgg-verydeep-19.mat
 import os
 import tensorflow as tf
+from keras.backend.tensorflow_backend import set_session
 
-
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+config = tf.ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction = 0.8 # 占用GPU90%的显存
+set_session(tf.Session(config=config))
 
 import tensorflow as tf
 from scipy import misc
@@ -17,6 +19,7 @@ from ssim import MultiScaleSSIM
 import models
 import utils
 import vgg
+from keras import backend as K
 
 # defining size of the training image patches
 
@@ -30,6 +33,7 @@ phone, batch_size, train_size, learning_rate, num_train_iters, \
 w_content, w_color, w_texture, w_tv, \
 dped_dir, vgg_dir, eval_step = utils.process_command_args(sys.argv)
 
+Complex_args = utils.Complex_args()
 np.random.seed(0)
 
 # loading training and test data
@@ -45,11 +49,11 @@ print("Training data was loaded\n")
 TEST_SIZE = test_data.shape[0]
 num_test_batches = int(test_data.shape[0] / batch_size)
 
-Complex_args = utils.Complex_args()
 # defining system architecture
 
 with tf.Graph().as_default(), tf.Session() as sess:
     # placeholders for training data
+    K.set_session(sess)
 
     phone_ = tf.placeholder(tf.float32, [None, PATCH_SIZE])
     phone_image = tf.reshape(phone_, [-1, PATCH_HEIGHT, PATCH_WIDTH, 3])
@@ -147,6 +151,7 @@ with tf.Graph().as_default(), tf.Session() as sess:
     all_zeros = np.reshape(np.zeros((batch_size, 1)), [batch_size, 1])
     test_crops = test_data[np.random.randint(0, TEST_SIZE, 5), :]
 
+    #logs = open('../Image_Enhance/models/' + phone + '.txt', "w+")
     logs = open('models/' + phone + '.txt', "w+")
     logs.close()
 
@@ -218,6 +223,7 @@ with tf.Graph().as_default(), tf.Session() as sess:
 
             # save the results to log file
 
+            #logs = open('../Image_Enhance_2/models/' + phone + '.txt', "a")
             logs = open('models/' + phone + '.txt', "a")
             logs.write(logs_disc)
             logs.write('\n')
@@ -232,6 +238,7 @@ with tf.Graph().as_default(), tf.Session() as sess:
             idx = 0
             for crop in enhanced_crops:
                 before_after = np.hstack((np.reshape(test_crops[idx], [PATCH_HEIGHT, PATCH_WIDTH, 3]), crop))
+                #misc.imsave('../Image_Enhance_2/results/' + str(phone) + "_" + str(idx) + '_iteration_' + str(i) + '.jpg', before_after)
                 misc.imsave('results/' + str(phone) + "_" + str(idx) + '_iteration_' + str(i) + '.jpg', before_after)
                 idx += 1
 
@@ -240,7 +247,9 @@ with tf.Graph().as_default(), tf.Session() as sess:
 
             # save the model that corresponds to the current iteration
 
+            #saver.save(sess, '../Image_Enhance_2/models/' + str(phone) + '_iteration_' + str(i) + '.ckpt', write_meta_graph=False)
             saver.save(sess, 'models/' + str(phone) + '_iteration_' + str(i) + '.ckpt', write_meta_graph=False)
+
 
             # reload a different batch of training data
 

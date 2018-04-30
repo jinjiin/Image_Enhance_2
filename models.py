@@ -22,7 +22,7 @@ from   keras.regularizers                    import l2
 from   keras.utils.np_utils                  import to_categorical
 import keras.backend                         as     K
 import keras.models                          as     KM
-from   kerosene.datasets                     import svhn2
+#from   kerosene.datasets                     import svhn2
 import logging                               as     L
 import numpy                                 as     np
 import os, pdb, socket, sys, time
@@ -142,7 +142,7 @@ def comResnet(input, d):
     channelAxis = 1 if K.image_data_format() == 'channels_first' else -1
     convArgs = {
         "padding": "same",
-        "use bias": False,
+        "use_bias": False,
         "kernel_regularizer": l2(0.0001)
     }
     bnArgs = {
@@ -156,7 +156,7 @@ def comResnet(input, d):
     })
 
     O = learnConcatRealImagBlock(input, (1, 1), (3, 3), 0, '0', convArgs, bnArgs, d)
-    O = tf.concat(1, [input, O])
+    O = tf.concat([input, O], 1)
     O = ComplexConv2D(filters=64, kernel_size=9, name='conv1', **convArgs)(O)
     O = ComplexBN(name='bn conv1 2a', **bnArgs)(O)
     O = tf.nn.relu(O)

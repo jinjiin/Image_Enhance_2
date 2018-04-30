@@ -6,7 +6,7 @@
 
 from keras import backend as K
 from keras import activations, initializers, regularizers, constraints
-from keras.layers.core import Lambda, Layer, InputSpec, Convolution1D, Convolution2D, add, multiply, Activation, Input, concatenate
+from keras.layers import Lambda, Layer, InputSpec, Convolution1D, Convolution2D, add, multiply, Activation, Input, concatenate
 from keras.layers.convolutional import _Conv
 from keras.layers.merge import _Merge
 from keras.layers.recurrent import Recurrent

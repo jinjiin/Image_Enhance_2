@@ -45,11 +45,11 @@ def process_command_args(arguments):
     w_texture = 1
     w_tv = 2000
 
-    dped_dir = 'dped/'
-    vgg_dir = 'vgg_pretrained/imagenet-vgg-verydeep-19.mat'
+    dped_dir = '../Image_Enhance/dped/'
+    vgg_dir = '../Image_Enhance/vgg_pretrained/imagenet-vgg-verydeep-19.mat'
     eval_step = 1000
 
-    phone = ""
+    phone = "iphone"
 
     for args in arguments:
 
@@ -215,6 +215,23 @@ def Complex_args():
                              description=None,
                              epilog=None,
                              )
+    """argp = {}
+    argp['datadir'] = '.'
+    argp['workdir'] = '.'
+    argp['seed'] = 0xe4223644e98b8e64
+    argp['summary'] = True  ##
+    argp['model'] = 'complex'
+    argp['dataset'] = 'cifar10'
+    argp['dropout'] = 0
+    argp['num-epochs'] = 200
+    argp['batch-size'] = 64
+    argp['start-filter'] = 11
+    argp['num-blocks'] = 10
+    argp['spectral-param'] = True
+    argp['spectral-pool-gamma'] = 0.5
+    argp['spectral-pool-scheme'] = 'none'
+    argp['act'] = 'relu'
+    argp['']"""
     argp.add_argument("-d", "--datadir", default=".", type=str,
                       help="Path to datasets directory.")
     argp.add_argument("-w", "--workdir", default=".", type=str,
@@ -282,7 +299,7 @@ def Complex_args():
                       help="Beta1 for Adam.")
     optp.add_argument("--beta2", default=0.999, type=float,
                       help="Beta2 for Adam.")
-    return argp
+    return argp.parse_args()
 
 
 
