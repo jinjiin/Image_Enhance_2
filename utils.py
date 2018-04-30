@@ -49,7 +49,7 @@ def process_command_args(arguments):
     vgg_dir = '../Image_Enhance/vgg_pretrained/imagenet-vgg-verydeep-19.mat'
     eval_step = 1000
 
-    phone = "iphone"
+    phone = "mi"
 
     for args in arguments:
 
@@ -99,10 +99,10 @@ def process_command_args(arguments):
         print("python train_model.py model={iphone,blackberry,sony}\n")
         sys.exit()
 
-    if phone not in ["iphone", "sony", "blackberry"]:
+    """if phone not in ["iphone", "sony", "blackberry"]:
         print("\nPlease specify the correct camera model:\n")
         print("python train_model.py model={iphone,blackberry,sony}\n")
-        sys.exit()
+        sys.exit()"""
 
     print("\nThe following parameters will be applied for CNN training:\n")
 

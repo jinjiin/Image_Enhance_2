@@ -156,27 +156,28 @@ def comResnet(input, d):
     })
 
     O = learnConcatRealImagBlock(input, (1, 1), (3, 3), 0, '0', convArgs, bnArgs, d)
-    O = tf.concat([input, O], 1)
+    #O = tf.concat([input, O], 1)
+    O = Concatenate(channelAxis)([input, O])
     O = ComplexConv2D(filters=64, kernel_size=9, name='conv1', **convArgs)(O)
     O = ComplexBN(name='bn conv1 2a', **bnArgs)(O)
     O = tf.nn.relu(O)
 
     # residual
-    O = getResidualBlock(O, 3, [64, 64], 2, '0', 'regular', convArgs, bnArgs, d)
-    O = getResidualBlock(O, 3, [64, 64], 2, '0', 'regular', convArgs, bnArgs, d)
-    O = getResidualBlock(O, 3, [64, 64], 2, '0', 'regular', convArgs, bnArgs, d)
-    O = getResidualBlock(O, 3, [64, 64], 2, '0', 'regular', convArgs, bnArgs, d)
+    O = getResidualBlock(O, (3, 3), [64, 64], 2, '0', 'regular', convArgs, bnArgs, d)
+    O = getResidualBlock(O, (3, 3), [64, 64], 2, '0', 'regular', convArgs, bnArgs, d)
+    O = getResidualBlock(O, (3, 3), [64, 64], 2, '0', 'regular', convArgs, bnArgs, d)
+    O = getResidualBlock(O, (3, 3), [64, 64], 2, '0', 'regular', convArgs, bnArgs, d)
 
-    O = ComplexConv2D(filters=64, kernel_size=9, name='conv1', **convArgs)(O)
+    O = ComplexConv2D(filters=64, kernel_size=9, name='conv2', **convArgs)(O)
     O = ComplexBN(name='bn conv2 1a', **bnArgs)(O)
     O = tf.nn.relu(O)
 
-    O = ComplexConv2D(filters=64, kernel_size=9, name='conv1', **convArgs)(O)
-    O = ComplexBN(name='bn conv2 1a', **bnArgs)(O)
-    O = tf.nn.relu(O)
-
-    O = ComplexConv2D(filters=3, kernel_size=9, name='conv2', **convArgs)(O)
+    O = ComplexConv2D(filters=64, kernel_size=9, name='conv3', **convArgs)(O)
     O = ComplexBN(name='bn conv3 1a', **bnArgs)(O)
+    O = tf.nn.relu(O)
+
+    O = ComplexConv2D(filters=3, kernel_size=9, name='conv4', **convArgs)(O)
+    O = ComplexBN(name='bn conv4 1a', **bnArgs)(O)
     O = tf.nn.tanh(O)
     return O
 
